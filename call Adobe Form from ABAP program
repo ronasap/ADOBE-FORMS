@@ -1,72 +1,84 @@
-DATA: ls_docparams     TYPE sfpdocparams,
-      ls_outputparams  TYPE sfpoutputparams,
-      ls_interfacetype TYPE fpinterfacetype,
-      lv_formname      TYPE fpname,
-      ls_formout       TYPE fpformoutput,
-      lv_function      TYPE rs38l_fnam.
+*&---------------------------------------------------------------------*
+*& Report ZST7_CALL_ADOBE_FORM
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZST7_CALL_ADOBE_FORM.
+
+PARAMETERS: P_FMNAM  TYPE FPNAME DEFAULT 'ZST7_FLIGHT_FORM',
+            P_CARRID TYPE S_CARR_ID.
+
+
+DATA: LS_DOCPARAMS     TYPE SFPDOCPARAMS,
+      LS_OUTPUTPARAMS  TYPE SFPOUTPUTPARAMS,
+      LS_INTERFACETYPE TYPE FPINTERFACETYPE,
+      LV_FORMNAME      TYPE FPNAME,
+      LS_FORMOUT       TYPE FPFORMOUTPUT,
+      LV_FUNCTION      TYPE RS38L_FNAM.
 
 
 
-lv_formname = 'ZNAME_ADOBE_FORM'.
+LV_FORMNAME = P_FMNAM.
 
 CALL FUNCTION 'FP_FUNCTION_MODULE_NAME'
   EXPORTING
-    i_name           = lv_formname
+    I_NAME           = LV_FORMNAME
   IMPORTING
-    e_funcname       = lv_function
-    e_interface_type = ls_interfacetype.
+    E_FUNCNAME       = LV_FUNCTION
+    E_INTERFACE_TYPE = LS_INTERFACETYPE.
 
-IF sy-subrc <> 0.
+IF SY-SUBRC <> 0.
 
-  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-        WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+  MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+        WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
 ENDIF.
 
 
 CALL FUNCTION 'FP_JOB_OPEN'
   CHANGING
-    ie_outputparams = ls_outputparams
+    IE_OUTPUTPARAMS = LS_OUTPUTPARAMS
   EXCEPTIONS
-    cancel          = 1
-    usage_error     = 2
-    system_error    = 3
-    internal_error  = 4
+    CANCEL          = 1
+    USAGE_ERROR     = 2
+    SYSTEM_ERROR    = 3
+    INTERNAL_ERROR  = 4
     OTHERS          = 5.
-IF sy-subrc <> 0.
-  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+IF SY-SUBRC <> 0.
+  MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+          WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
 ENDIF.
 
 
-CLEAR: ls_docparams.
-ls_docparams-langu    = 'FR'.
-ls_docparams-country  = 'FR'.
+CLEAR: LS_DOCPARAMS.
+LS_DOCPARAMS-LANGU    = 'EN'.
+LS_DOCPARAMS-COUNTRY  = 'IL'.
 
-CALL FUNCTION lv_function
+
+
+
+CALL FUNCTION LV_FUNCTION
   EXPORTING
-    /1bcdwb/docparams  = ls_docparams
-*    is_vbak            = ls_vbak           " Specific data to pass, used for form 
-*    it_vbap            = lt_vbap           " Specific data to pass, used for form
-  IMPORTING
-    /1bcdwb/formoutput = ls_formout
+    /1BCDWB/DOCPARAMS  = LS_DOCPARAMS
+    IV_CARRID          = P_CARRID
+    /1BCDWB/FORMOUTPUT = LS_FORMOUT
   EXCEPTIONS
-    usage_error        = 1
-    system_error       = 2
-    internal_error     = 3
+    USAGE_ERROR        = 1
+    SYSTEM_ERROR       = 2
+    INTERNAL_ERROR     = 3
     OTHERS             = 4.
-IF sy-subrc <> 0.
-  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+IF SY-SUBRC <> 0.
+  MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+  WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
 ENDIF.
 
 
 CALL FUNCTION 'FP_JOB_CLOSE'
   EXCEPTIONS
-    usage_error    = 1
-    system_error   = 2
-    internal_error = 3
+    USAGE_ERROR    = 1
+    SYSTEM_ERROR   = 2
+    INTERNAL_ERROR = 3
     OTHERS         = 4.
-IF sy-subrc <> 0.
-  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
-          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+IF SY-SUBRC <> 0.
+  MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+          WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
 ENDIF.
