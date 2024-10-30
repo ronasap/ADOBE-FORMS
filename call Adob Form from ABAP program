@@ -1,0 +1,72 @@
+DATA: ls_docparams     TYPE sfpdocparams,
+      ls_outputparams  TYPE sfpoutputparams,
+      ls_interfacetype TYPE fpinterfacetype,
+      lv_formname      TYPE fpname,
+      ls_formout       TYPE fpformoutput,
+      lv_function      TYPE rs38l_fnam.
+
+
+
+lv_formname = 'ZNAME_ADOBE_FORM'.
+
+CALL FUNCTION 'FP_FUNCTION_MODULE_NAME'
+  EXPORTING
+    i_name           = lv_formname
+  IMPORTING
+    e_funcname       = lv_function
+    e_interface_type = ls_interfacetype.
+
+IF sy-subrc <> 0.
+
+  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+        WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDIF.
+
+
+CALL FUNCTION 'FP_JOB_OPEN'
+  CHANGING
+    ie_outputparams = ls_outputparams
+  EXCEPTIONS
+    cancel          = 1
+    usage_error     = 2
+    system_error    = 3
+    internal_error  = 4
+    OTHERS          = 5.
+IF sy-subrc <> 0.
+  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDIF.
+
+
+CLEAR: ls_docparams.
+ls_docparams-langu    = 'FR'.
+ls_docparams-country  = 'FR'.
+
+CALL FUNCTION lv_function
+  EXPORTING
+    /1bcdwb/docparams  = ls_docparams
+*    is_vbak            = ls_vbak           " Specific data to pass, used for form 
+*    it_vbap            = lt_vbap           " Specific data to pass, used for form
+  IMPORTING
+    /1bcdwb/formoutput = ls_formout
+  EXCEPTIONS
+    usage_error        = 1
+    system_error       = 2
+    internal_error     = 3
+    OTHERS             = 4.
+IF sy-subrc <> 0.
+  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDIF.
+
+
+CALL FUNCTION 'FP_JOB_CLOSE'
+  EXCEPTIONS
+    usage_error    = 1
+    system_error   = 2
+    internal_error = 3
+    OTHERS         = 4.
+IF sy-subrc <> 0.
+  MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+          WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+ENDIF.
